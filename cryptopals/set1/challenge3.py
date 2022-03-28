@@ -77,7 +77,7 @@ def char_freq_xor_decode(cipher_bytes: bytes, lang_freq_map: Dict, encoding, sco
     return optimal
 
 if __name__ == "__main__":
-    with open('./english_language_charachter_frequencies.json') as lang_freq_file:    
+    with open('./cryptopals/set1/english_language_charachter_frequencies.json') as lang_freq_file:    
         input_hex_str = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
         lang_freq_map = json.load(lang_freq_file)
         

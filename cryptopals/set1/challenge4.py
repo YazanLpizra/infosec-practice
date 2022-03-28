@@ -15,7 +15,7 @@ from collections import Counter
 from challenge3 import char_freq_xor_decode, chi_squared_scoring, score_text_as_lang
 
 if __name__ == "__main__":
-    with open('./english_language_charachter_frequencies.json') as lang_freq_file, open('./4.txt', 'rt') as data_file:    
+    with open('./cryptopals/set1/english_language_charachter_frequencies.json') as lang_freq_file, open('./cryptopals/set1/4.txt', 'rt') as data_file:    
         lang_freq_map = json.load(lang_freq_file)
 
         decode_fn = lambda hex_str: char_freq_xor_decode(bytes.fromhex(hex_str.strip()), lang_freq_map, 'utf8', chi_squared_scoring)

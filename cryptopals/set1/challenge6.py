@@ -39,8 +39,8 @@ def chunk_text(text: str, chunk_size: int):
         for i in range(0, text_len, chunk_size) 
     ]
 
-    if len(chunks[-1]) != chunk_size:
-        chunks = chunks[:-1]
+    # if len(chunks[-1]) != chunk_size:
+    #     chunks = chunks[:-1]
     
     return chunks
 
@@ -170,7 +170,7 @@ class Tests:
     join up the decoded 1-char keys in order to generate the final key string        
 """
 if __name__ == "__main__":
-    with open('./english_language_charachter_frequencies.json') as lang_freq_file, open('./6.txt', 'rt') as data_file:    
+    with open('./cryptopals/set1/english_language_charachter_frequencies.json') as lang_freq_file, open('./cryptopals/set1/6.txt', 'rt') as data_file:    
         lang_freq_map = json.load(lang_freq_file)
         encoded_text = data_file.read().strip()
         
