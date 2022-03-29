@@ -20,27 +20,25 @@ import sys
 
 # ref: https://stackoverflow.com/a/29409299, encrypt2()
 # more code and not as simple as a for-loop, but apparantly much faster impl
-def fixed_hex_xor(hex_operand, hex_key, byteorder=sys.byteorder):
-    byte_operand = bytes.fromhex(hex_operand)
-    byte_key = bytes.fromhex(hex_key)
+def fixed_xor(operand: bytes, key: bytes, byteorder=sys.byteorder):
     # cool way to get the lengths to match
-    byte_key = byte_key[:len(byte_operand)]
-    byte_operand = byte_operand[:len(byte_key)]
+    key = key[:len(operand)]
+    operand = operand[:len(key)]
 
-    int_operand = int.from_bytes(byte_operand, byteorder)
-    int_key = int.from_bytes(byte_key, byteorder)
+    int_operand = int.from_bytes(operand, byteorder)
+    int_key = int.from_bytes(key, byteorder)
 
     int_cipher = int_operand ^ int_key
 
-    bytes_cipher = int_cipher.to_bytes(len(byte_key), byteorder)
-    return bytes.hex(bytes_cipher)
+    return int_cipher.to_bytes(len(key), byteorder)
 
 if __name__ == "__main__":
     input_hex_str = '1c0111001f010100061a024b53535009181c'
     input_hex_key = '686974207468652062756c6c277320657965'
     expected_xor_val = '746865206b696420646f6e277420706c6179'
 
-    actual_xor_val = fixed_hex_xor(input_hex_str, input_hex_key)
+    actual_xor_val = fixed_xor(bytes.fromhex(input_hex_str), bytes.fromhex(input_hex_key))
+    actual_xor_val = bytes.hex(actual_xor_val)
     print('actual value:', actual_xor_val)
 
     try:

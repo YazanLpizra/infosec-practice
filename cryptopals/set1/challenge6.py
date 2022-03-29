@@ -1,9 +1,11 @@
 # from operator import is_not
 # from functools import partial 
 import base64
+from cmath import inf
 import itertools
 import json
-from turtle import distance
+from typing import Iterable
+from unicodedata import decimal
 from challenge3 import char_freq_xor_decode, chi_squared_scoring
 from challenge5 import text_xor
 
@@ -22,7 +24,8 @@ def bits(n):
 def hamming_distance(src_bytes: bytes, target_bytes: bytes) -> int: 
     # ref: https://en.wikipedia.org/wiki/Hamming_distance, https://www.hacksparrow.com/comp-sci/what/hamming-distance.html
     if len(src_bytes) != len(target_bytes):
-        raise 'Lengths must match!'
+        # raise 'Lengths must match!'
+        return 0
     
     distance = 0
     for byte1, byte2 in zip(src_bytes, target_bytes):
@@ -31,7 +34,7 @@ def hamming_distance(src_bytes: bytes, target_bytes: bytes) -> int:
         distance += hamming_weight
     return distance
 
-def chunk_text(text: str, chunk_size: int):
+def chunk_text(text: Iterable, chunk_size: int):
     # ref: https://stackoverflow.com/a/23384110
     text_len = len(text)
     chunks = [ 
@@ -39,12 +42,9 @@ def chunk_text(text: str, chunk_size: int):
         for i in range(0, text_len, chunk_size) 
     ]
 
-    # if len(chunks[-1]) != chunk_size:
-    #     chunks = chunks[:-1]
-    
     return chunks
 
-def score_keysize(ciphertext, keysize):
+def score_keysize(ciphertext: bytes, keysize: int) -> float:
     cipher_chunks = chunk_text(ciphertext, keysize)
     
     blocks = [
@@ -60,7 +60,7 @@ def score_keysize(ciphertext, keysize):
     avg = (sum(distances[0]) + sum(distances[1])) / (len(cipher_chunks) * 2)
     return avg / keysize # normalize score
 
-def guess_keysize(ciphertext, min_keysize=2, max_keysize=40): 
+def guess_keysize(ciphertext: bytes, min_keysize=2, max_keysize=40): 
     keysize_scores = [] # list of (keysize, hamming distance)
     for keysize in range(min_keysize, max_keysize):
         avg_distance = score_keysize(ciphertext, keysize)
@@ -82,7 +82,7 @@ def decode_multi_byte_xor(ciphertext: bytes, keysize: int, lang_freq_map):
     complete_key = ''
     for col in transposed:
         # join each column into a string for processing
-        col_bytes = bytes(col)
+        col_bytes = bytes([b for b in col if b is not None])
         # process bytes
         (_, col_text, key_char) = char_freq_xor_decode(col_bytes, lang_freq_map, 'utf8', chi_squared_scoring)
 
@@ -93,13 +93,9 @@ def decode_multi_byte_xor(ciphertext: bytes, keysize: int, lang_freq_map):
     plaintext = ''.join([''.join(items) for items in zip(*text_cols)])
     return (plaintext, complete_key, )
 
-def viginere_decode(text: str, lang_freq_map):
-    ciphertext = bytes.fromhex(base64.b64decode(text).hex())
-
+def viginere_decode(ciphertext: bytes, lang_freq_map):
     (keysize, _) = guess_keysize(ciphertext)
-
     print('>> keysize guess:', keysize)
-
     return decode_multi_byte_xor(ciphertext, keysize, lang_freq_map)
 
 class Tests:
@@ -128,9 +124,8 @@ class Tests:
         expected_plaintext = Tests.get_gettysberg_address()
         xor_key = 'timmy'
 
-        ciphertext = text_xor(expected_plaintext, xor_key)
+        ciphertext_bytes = text_xor(expected_plaintext.encode('utf8'), xor_key.encode('utf8'))
 
-        ciphertext_bytes = bytes.fromhex(ciphertext)
         actual_plaintext, actual_key = decode_multi_byte_xor(ciphertext_bytes, len(xor_key), lang_freq_map)
 
         try:
@@ -144,14 +139,18 @@ class Tests:
             print('[', expected_plaintext, ']')
 
     def test_decode_multi_byte_xor_key_not_even_factor(lang_freq_map):
-        expected_plaintext = Tests.get_gettysberg_address() + '.'
+        expected_plaintext = Tests.get_gettysberg_address() + 'Four'
         xor_key = 'timmy'
 
-        ciphertext = text_xor(expected_plaintext, xor_key)
+        ciphertext_bytes = text_xor(expected_plaintext.encode('utf8'), xor_key.encode('utf8'))
 
-        ciphertext_bytes = bytes.fromhex(ciphertext)
-        actual_plaintext = decode_multi_byte_xor(ciphertext_bytes, len(xor_key), lang_freq_map)
+        actual_plaintext, actual_key = decode_multi_byte_xor(ciphertext_bytes, len(xor_key), lang_freq_map)
 
+        try:
+            assert actual_key == xor_key
+        except AssertionError:
+            print(f'FAILURE: Actual key value does not match expected key value. Actual key: [{actual_key}]. Expected key: [{xor_key}]')
+        
         try:
             assert expected_plaintext == actual_plaintext
             print('decode_multi_byte_xor test where text_length%key_length != 0 passed!')
@@ -172,16 +171,18 @@ class Tests:
 if __name__ == "__main__":
     with open('./cryptopals/set1/english_language_charachter_frequencies.json') as lang_freq_file, open('./cryptopals/set1/6.txt', 'rt') as data_file:    
         lang_freq_map = json.load(lang_freq_file)
+        
         encoded_text = data_file.read().strip()
+        encoded_text = base64.b64decode(encoded_text)
         
         print('--------- running tests ---------')
         Tests.test_hamming_distance()
         Tests.test_decode_multi_byte_xor_key_even_factor(lang_freq_map)
-        # Tests.test_decode_multi_byte_xor_key_not_even_factor(lang_freq_map)
+        
+        # TODO: fix this test. likely related to the bug in final output
+        # Tests.test_decode_multi_byte_xor_key_not_even_factor(lang_freq_map) 
         print('--------- tests complete ---------')
 
         (plaintext, complete_key, ) = viginere_decode(encoded_text, lang_freq_map)
         print(f'>> complete xor key: [{complete_key}]') # "Terminator X: Bring the ioise".. "ioise" should probably be "noise"
-        print(plaintext)
-
-        # TODO: fix the chunking logic
+        # print(plaintext)

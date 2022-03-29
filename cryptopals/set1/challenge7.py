@@ -25,7 +25,7 @@ def decrypt_aes_ecb(ciphertext: bytes, key: bytes) -> bytes:
     return b''.join(plain_chunks)
 
 if __name__ == "__main__":
-    with open('./cryptopals/set1/7.txt', 'rt') as data_file:    
+    with open('./7.txt', 'rt') as data_file:    
         encoded_text = data_file.read().strip()
         ciphertext = base64.b64decode(encoded_text)
 

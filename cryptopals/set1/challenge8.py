@@ -1,3 +1,14 @@
+"""
+    Detect AES in ECB mode
+
+    In this file are a bunch of hex-encoded ciphertexts.
+
+    One of them has been encrypted with ECB.
+
+    Detect it.
+
+    Remember that the problem with ECB is that it is stateless and deterministic; the same 16 byte plaintext block will always produce the same 16 byte ciphertext.
+"""
 import binascii
 from collections import Counter
 from challenge6 import chunk_text
@@ -18,7 +29,7 @@ def find_in_list(lines: str) -> str:
     return '--Not Found--'
 
 if __name__ == "__main__":
-    with open('./cryptopals/set1/8.txt', 'rt') as data_file:
+    with open('./8.txt', 'rt') as data_file:
         lines = data_file.readlines()
         found = find_in_list(lines)
         print(found)
