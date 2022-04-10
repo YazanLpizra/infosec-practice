@@ -12,13 +12,15 @@
     The file here is intelligible (somewhat) when CBC decrypted against "YELLOW SUBMARINE" with an IV of all ASCII 0 (\x00\x00\x00 &c) 
 """
 
-from typing import Literal
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from challenge6 import chunk_text
-from challenge5 import text_xor
 from base64 import b64decode
+from typing import Literal
 
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+from challenge5 import text_xor
+from challenge6 import chunk_text
 from challenge9 import pkcs7_padding
+
 
 def cbc_encrypt(plaintext: bytes, xor_input: bytes, encryptor):
     ciphertext = text_xor(plaintext, xor_input)
@@ -45,7 +47,7 @@ def cipher_block_chaining(plaintext: bytes, key: bytes, init_vector: bytes, mode
         cbc_actor = cipher.decryptor()
     elif mode == 'encrypt':
         cbc_fn = cbc_encrypt
-        cbc_actor = cipher.decryptor
+        cbc_actor = cipher.encryptor()
     else:
         raise 'Invalid mode!'
     

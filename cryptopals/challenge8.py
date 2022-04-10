@@ -18,9 +18,7 @@ def is_aes_ecb(ciphertext: bytes, keysize: int = 16):
     chunk_freq = Counter(chunks)
 
     repeated_chunks = [block for (block,freq) in chunk_freq.items() if freq > 1]
-    if len(repeated_chunks):
-        return True
-    return False
+    return len(repeated_chunks) > 0
 
 def find_in_list(lines: str) -> str:
     for line in lines:
