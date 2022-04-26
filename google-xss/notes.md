@@ -1,8 +1,17 @@
-# XSS Notes
+# XSS
+
+## Misc notes
 
 * pretty much like sql injection but for html/js
 * when DOM is updated dynamically, try using HTML5 events (`autofocus onfocus="alert()"` is a dope hack)
 * Use this snippet to pause before page redirects: `window.addEventListener("beforeunload", function() { debugger; }, false)`
+* if a URL-vector payload _should_ probably work but it doesn't, make sure you URL-encoded it
+
+## Cool links
+
+* https://github.com/cure53/XSSChallengeWiki/wiki/H5SC-Minichallenge-3:-%22Sh*t,-it's-CSP!%22
+* https://html5sec.org
+* 
 
 ## xssgame.com Answers
 
