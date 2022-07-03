@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>html sandbox</title>
 
+    [[include:home.gtl]][[/include:home.gtl]]
+
     <style>
 .test-js{
     background-color: expression( (new Date()).getHours(  )%2 ? "#B8D4FF" : "#F08A00" );
